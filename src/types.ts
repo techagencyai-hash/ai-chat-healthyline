@@ -59,6 +59,10 @@ export interface ChatOptions {
   
   // Optional features
   allowFileUploads?: boolean;
+  showBestSellers?: boolean;
+  showCatalog?: boolean;
+  showCompare?: boolean;
+  showMyOrders?: boolean;
 }
 
 export interface Chat {

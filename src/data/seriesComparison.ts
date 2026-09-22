@@ -2,7 +2,7 @@ export interface SeriesSpecItem {
   id: string;
   name: string;
   shortName: string;
-  categoryGroup: 'Far Infrared and PEMF Mat with Photon' | 'FIR and PEMF Mat' | 'Far Infrared Mat';
+  categoryGroup: 'Far Infrared and PEMF Mat with Photon Light Therapy' | 'FIR and PEMF Mat' | 'Far Infrared Mat';
   badge?: string;
   description: string;
   bestFor: string;
@@ -19,7 +19,7 @@ export interface SeriesSpecItem {
     pemfMaxIntensity: string | null;
     pemfPulseDuration: string | null;
     pemfWaveType: string | null;
-    matFlexibility: 'Stiff' | 'Soft' | 'Flexible';
+    matFlexibility: 'Stiff' | 'Soft';
   };
   highlights: string[];
 }
@@ -35,7 +35,7 @@ export interface SpecDefinition {
 export const SPEC_DEFINITIONS: SpecDefinition[] = [
   {
     key: 'farInfrared',
-    label: 'Far Infrared (FIR)',
+    label: 'Far Infrared Therapy',
     category: 'core',
     description: 'Deep penetrating thermal heat that relaxes muscles, relieves stiffness, and boosts micro-circulation.'
   },
@@ -43,37 +43,37 @@ export const SPEC_DEFINITIONS: SpecDefinition[] = [
     key: 'negativeIon',
     label: 'Negative Ion Therapy',
     category: 'core',
-    description: 'Natural negative ions from gemstones deliver antioxidant benefits and combat positive ion fatigue.'
+    description: 'Natural negative ions emitted from gemstones deliver antioxidant benefits and combat positive ion fatigue.'
   },
   {
     key: 'hotGemstones',
     label: 'Hot Gemstone Therapy',
     category: 'core',
-    description: 'Natural crushed and polished gemstones (Amethyst, Tourmaline, Jade, etc.) that radiate FIR rays.'
+    description: 'Natural crushed and polished gemstones (Amethyst, Tourmaline, Jade, Obsidian, etc.) that radiate FIR rays.'
   },
   {
     key: 'photonLight',
-    label: 'Photon Therapy (Red Light)',
+    label: 'Photon Light Therapy',
     category: 'core',
-    description: 'Visible red 660nm LED light wavelengths supporting mitochondrial cellular energy, skin vitality, and collagen.'
+    description: 'Visible red 660nm LED light wavelengths supporting mitochondrial cellular energy, skin vitality, and collagen production.'
   },
   {
     key: 'pemfFrequencies',
     label: 'PEMF Frequencies',
     category: 'pemf',
-    description: 'Pulsed Electromagnetic Fields. 7.83Hz represents Earth’s natural Schumann resonance; 1-30Hz allows multi-target biohacking.'
+    description: 'Pulsed Electromagnetic Field frequency ranges (e.g., 0.25 to 30Hz or 1 to 30Hz) tuned for cellular recovery and natural biorhythms.'
   },
   {
     key: 'pemfMaxIntensity',
     label: 'PEMF Max Intensity',
     category: 'pemf',
-    description: 'Magnetic flux density in Gauss (GS). 2-3GS is ideal for cellular recovery, while 8-12GS is high-power professional grade.'
+    description: 'Magnetic flux density in Gauss (GS). Ranges from 2GS for gentle biological resonance up to 8-12GS for high-power intensive therapy.'
   },
   {
     key: 'pemfPulseDuration',
     label: 'PEMF Pulse Duration',
     category: 'pemf',
-    description: 'Speed of magnetic pulses. Ultra-fast pulses deliver targeted resonance to deep tissues.'
+    description: 'Speed and duration of magnetic field pulses (Medium, Fast, or Ultra Fast) for targeted tissue absorption.'
   },
   {
     key: 'pemfWaveType',
@@ -85,7 +85,7 @@ export const SPEC_DEFINITIONS: SpecDefinition[] = [
     key: 'matFlexibility',
     label: 'Mat Flexibility',
     category: 'physical',
-    description: 'Stiff mats maximize gemstone density on flat surfaces; Soft & Flexible mats allow folding and bed-cushion comfort.'
+    description: 'Stiff mats maximize gemstone density on flat surfaces; Soft mats allow pliable cushioning for beds, chairs, and joint wrapping.'
   }
 ];
 
@@ -94,126 +94,126 @@ export const HEALTHYLINE_SERIES: SeriesSpecItem[] = [
     id: 'jet',
     name: 'Jet Series™',
     shortName: 'Jet',
-    categoryGroup: 'Far Infrared and PEMF Mat with Photon',
+    categoryGroup: 'Far Infrared and PEMF Mat with Photon Light Therapy',
     badge: 'High Intensity',
-    description: 'High-power portable PEMF mat with intensive 8-12GS magnetic fields and photon red light for rapid recovery.',
+    description: 'High-intensity PEMF mat with ultra-wide 0.25 to 30Hz frequencies, 8-12GS maximum magnetic power, and Photon Light Therapy for rapid athletic recovery and deep systemic revitalization.',
     bestFor: 'Athletes, deep tissue recovery, rapid sports rehabilitation, intensive PEMF sessions',
     gemstones: 'Tourmaline, Jade, Amethyst',
     priceRange: '$$$',
-    image: 'https://healthyline.com/cdn/shop/files/Amethyst-Sodalite-Blue-Lace-Agate-Green-Aventurine-Yellow-Aventurine-Carnelian-Red-Jasper-Rainbow-Mat-4020-Firm-PEMF-InframatPro-4th-edition_1_9f2602ce-44a3-448f-a368-5f14e04e4c1c.webp?v=1772470017',
+    image: 'https://healthyline.com/cdn/shop/files/Jet_Mat_7224_3_bf4b3c5d-9292-49ed-b20d-31310f2d698c.jpg?v=1748362084&width=480',
     link: 'https://healthyline.com/collections/jet-series',
     specs: {
       farInfrared: true,
       negativeIon: true,
       hotGemstones: true,
       photonLight: true,
-      pemfFrequencies: '1 to 30Hz',
+      pemfFrequencies: '0.25 to 30Hz',
       pemfMaxIntensity: '8 - 12GS',
       pemfPulseDuration: 'Medium',
-      pemfWaveType: 'Square or Sine',
+      pemfWaveType: 'Sine',
       matFlexibility: 'Stiff'
     },
-    highlights: ['Max 12 Gauss intensity', 'Photon LED therapy', 'Dual Waveform (Square/Sine)', 'Adjustable 1-30Hz']
+    highlights: ['8 - 12GS Max Intensity PEMF', '0.25 to 30Hz Frequency Range', 'Photon Light Therapy (660nm)', 'Far Infrared & Negative Ions']
   },
   {
     id: 'rainbow-chakra',
-    name: 'Rainbow Chakra Series™',
+    name: 'Rainbow Chakra Series',
     shortName: 'Rainbow Chakra',
-    categoryGroup: 'Far Infrared and PEMF Mat with Photon',
+    categoryGroup: 'Far Infrared and PEMF Mat with Photon Light Therapy',
     badge: '7 Gemstones',
-    description: 'Holistic 5-therapy system featuring 7 natural gemstones mapped to the body’s 7 chakras for complete balance.',
+    description: 'Holistic 5-therapy alignment mat featuring 7 natural gemstones mapped to the body’s chakras with 1 to 30Hz PEMF, 2-12GS variable intensity, and Photon Red Light.',
     bestFor: 'Meditation, chakra balancing, stress relief, emotional harmony, spiritual wellness',
-    gemstones: 'Amethyst, Sodalite, Blue Lace Agate, Green Aventurine, Yellow Aventurine, Carnelian, Red Jasper',
+    gemstones: '7 Gemstones: Amethyst, Sodalite, Blue Lace Agate, Green Aventurine, Yellow Aventurine, Carnelian, Red Jasper',
     priceRange: '$$$$',
-    image: 'https://healthyline.com/cdn/shop/files/Amethyst-Sodalite-Blue-Lace-Agate-Green-Aventurine-Yellow-Aventurine-Carnelian-Red-Jasper-Rainbow-Mat-4020-Firm-PEMF-InframatPro-4th-edition_1_9f2602ce-44a3-448f-a368-5f14e04e4c1c.webp?v=1772470017',
+    image: 'https://healthyline.com/cdn/shop/files/Rainbow_Chakra_Mat_7428_-_3rd_Edition.jpg?v=1736634223&width=480',
     link: 'https://healthyline.com/products/rainbow-chakra-pemf-farinfrared-red-light-mat?variant=47076949655604',
     specs: {
       farInfrared: true,
       negativeIon: true,
       hotGemstones: true,
       photonLight: true,
-      pemfFrequencies: '7.83Hz',
-      pemfMaxIntensity: '3GS',
+      pemfFrequencies: '1 to 30Hz',
+      pemfMaxIntensity: '2 - 12GS',
       pemfPulseDuration: 'Medium',
       pemfWaveType: 'Sine',
       matFlexibility: 'Stiff'
     },
-    highlights: ['7 Chakra Gemstones', 'Earth Schumann PEMF (7.83Hz)', 'Photon 660nm Red Light', 'Negative Ion saturation']
+    highlights: ['7 Chakra Natural Gemstones', '2 - 12GS Variable Intensity', '1 to 30Hz PEMF Frequencies', 'Photon Red Light Therapy']
   },
   {
     id: 'platinum',
     name: 'Platinum Series™',
     shortName: 'Platinum',
-    categoryGroup: 'Far Infrared and PEMF Mat with Photon',
+    categoryGroup: 'Far Infrared and PEMF Mat with Photon Light Therapy',
     badge: 'Flagship Biohack',
-    description: 'The ultimate fully customizable wellness mat with programmable PEMF frequencies, waveforms, pulse speeds and photon lights.',
+    description: 'Flagship customizable biohacking mat with 1 to 30Hz PEMF, selectable Square or Sine waveforms, Ultra Fast / Fast / Medium pulse durations, and Photon Light Therapy.',
     bestFor: 'Advanced biohackers, clinics, customizable therapeutic protocols, maximum versatility',
     gemstones: '5 Natural Gemstones (Amethyst, Tourmaline, Jade, Obsidian, Quartz)',
     priceRange: '$$$$$',
-    image: 'https://healthyline.com/cdn/shop/files/Amethyst-Sodalite-Blue-Lace-Agate-Green-Aventurine-Yellow-Aventurine-Carnelian-Red-Jasper-Rainbow-Mat-4020-Firm-PEMF-InframatPro-4th-edition_1_9f2602ce-44a3-448f-a368-5f14e04e4c1c.webp?v=1772470017',
+    image: 'https://healthyline.com/cdn/shop/files/Platinum-7224-mat.png?v=1779244728&width=480',
     link: 'https://healthyline.com/collections/platinum-series',
     specs: {
       farInfrared: true,
       negativeIon: true,
       hotGemstones: true,
       photonLight: true,
-      pemfFrequencies: '1 to 25Hz',
+      pemfFrequencies: '1 to 30Hz',
       pemfMaxIntensity: '3GS',
       pemfPulseDuration: 'Ultra Fast, Fast, Medium',
       pemfWaveType: 'Square or Sine',
       matFlexibility: 'Stiff'
     },
-    highlights: ['10+ Custom PEMF Programs', 'Ultra-Fast Pulse Duration', 'Square & Sine Wave Selection', 'Full Spectrum 5 Therapies']
+    highlights: ['Ultra Fast, Fast & Medium Pulses', 'Square or Sine Wave Selection', '1 to 30Hz PEMF & Photon Therapy', '3GS Magnetic Flux Density']
   },
   {
     id: 'taj',
     name: 'TAJ Series™',
     shortName: 'TAJ',
-    categoryGroup: 'FIR and PEMF Mat',
+    categoryGroup: 'Far Infrared and PEMF Mat with Photon Light Therapy',
     badge: '#1 Best Seller',
-    description: 'HealthyLine’s award-winning signature 4-therapy mat combining Tourmaline, Amethyst, Jade, Far Infrared, and PEMF.',
+    description: 'HealthyLine’s #1 signature mat combining Tourmaline, Amethyst, and Jade (TAJ) with Far Infrared, Negative Ions, 1 to 30Hz PEMF (2GS), and Photon Light Therapy.',
     bestFor: 'Daily pain relief, stiffness, joint comfort, improved circulation, sleep enhancement',
-    gemstones: 'Tourmaline, Amethyst, Jade (T-A-J)',
+    gemstones: 'Tourmaline, Amethyst, Jade (TAJ)',
     priceRange: '$$$',
-    image: 'https://healthyline.com/cdn/shop/files/TAJ-3624-Firm-PEMF-InframatPro-1.webp?v=1772470000',
+    image: 'https://healthyline.com/cdn/shop/files/TAJ_7224.webp?v=1779244751&width=480',
     link: 'https://healthyline.com/products/taj-mat-3624-firm-pemf-inframatpro',
     specs: {
       farInfrared: true,
       negativeIon: true,
       hotGemstones: true,
-      photonLight: false,
-      pemfFrequencies: '7.83Hz',
-      pemfMaxIntensity: '3GS',
+      photonLight: true,
+      pemfFrequencies: '1 to 30Hz',
+      pemfMaxIntensity: '2GS',
       pemfPulseDuration: 'Medium',
       pemfWaveType: 'Sine',
       matFlexibility: 'Stiff'
     },
-    highlights: ['Most popular model worldwide', 'Triple Gemstone Synergy', 'Proven 7.83Hz Schumann PEMF', 'Reliable daily therapy']
+    highlights: ['Triple Gemstone Synergy (TAJ)', '1 to 30Hz PEMF Frequency', 'Photon Light Therapy', '2GS Cellular Recovery Field']
   },
   {
     id: 'tao',
     name: 'TAO Series™',
     shortName: 'TAO',
-    categoryGroup: 'Far Infrared Mat',
-    badge: 'Pure Thermal',
-    description: 'Pure far infrared gemstone heating pad with Tourmaline, Obsidian, and Jade for concentrated deep warmth without PEMF.',
-    bestFor: 'Deep muscle soothing, budget-conscious thermal therapy, users sensitive to electromagnetic fields',
+    categoryGroup: 'FIR and PEMF Mat',
+    badge: 'FIR & PEMF',
+    description: 'High-efficiency FIR and PEMF mat featuring Tourmaline, Obsidian, and Jade with 1 to 30Hz PEMF, 2GS magnetic field, and negative ions for deep thermal wellness.',
+    bestFor: 'Deep muscle soothing, daily recovery, comprehensive thermal and PEMF therapy',
     gemstones: 'Tourmaline, Obsidian, Jade',
     priceRange: '$$',
-    image: 'https://healthyline.com/cdn/shop/files/TAO-1818-Soft-InframatPro-1.webp?v=1772470010',
+    image: 'https://healthyline.com/cdn/shop/files/TAO-Mat_7224.jpg?v=1736707815&width=480',
     link: 'https://healthyline.com/products/tao-chair-mat-1818-soft',
     specs: {
       farInfrared: true,
       negativeIon: true,
       hotGemstones: true,
       photonLight: false,
-      pemfFrequencies: null,
-      pemfMaxIntensity: null,
-      pemfPulseDuration: null,
-      pemfWaveType: null,
+      pemfFrequencies: '1 to 30Hz',
+      pemfMaxIntensity: '2GS',
+      pemfPulseDuration: 'Medium',
+      pemfWaveType: 'Sine',
       matFlexibility: 'Stiff'
     },
-    highlights: ['EMF-Free Far Infrared Heat', 'Negative Ion generation', 'Chair & full body sizes', 'Accessible entry price']
+    highlights: ['1 to 30Hz PEMF Frequency', '2GS Magnetic Intensity', 'Tourmaline, Obsidian & Jade', 'Far Infrared & Negative Ions']
   },
   {
     id: 'soft',
@@ -221,11 +221,11 @@ export const HEALTHYLINE_SERIES: SeriesSpecItem[] = [
     shortName: 'Soft',
     categoryGroup: 'Far Infrared Mat',
     badge: 'Bed & Sleep',
-    description: 'Ultra-cushioned pillow-top gemstone heating mat designed with flexible memory foam for overnight bed therapy and deep restorative sleep.',
-    bestFor: 'Overnight sleep, mattress topper use, users needing plush cushioned back/spine comfort',
+    description: 'Ultra-cushioned memory foam heating mat designed for overnight bed therapy, spine contouring, and gentle soothing Far Infrared gemstone warmth.',
+    bestFor: 'Overnight sleep, mattress topper use, plush cushioned back/spine comfort',
     gemstones: 'Crushed Amethyst & Tourmaline',
     priceRange: '$$$',
-    image: 'https://healthyline.com/cdn/shop/files/TAO-1818-Soft-InframatPro-1.webp?v=1772470010',
+    image: 'https://healthyline.com/cdn/shop/files/SOFT-Mat_7224.jpg?v=1736707361&width=480',
     link: 'https://healthyline.com/collections/soft-series',
     specs: {
       farInfrared: true,
@@ -238,7 +238,7 @@ export const HEALTHYLINE_SERIES: SeriesSpecItem[] = [
       pemfWaveType: null,
       matFlexibility: 'Soft'
     },
-    highlights: ['Pillow-top memory foam', 'Designed for overnight sleep', 'Comfortable on any mattress', 'Gentle soothing FIR warmth']
+    highlights: ['Soft Plush Flexibility', 'Engineered for Overnight Sleep', 'Deep Penetrating Far Infrared Heat', 'Negative Ion Gemstone Surface']
   },
   {
     id: 'mesh',
@@ -246,11 +246,11 @@ export const HEALTHYLINE_SERIES: SeriesSpecItem[] = [
     shortName: 'Mesh',
     categoryGroup: 'Far Infrared Mat',
     badge: 'Flexible Wrap',
-    description: 'Lightweight, flexible gemstone mat embedded in soft mesh, allowing you to wrap it around knees, shoulders, and legs.',
+    description: 'Lightweight and pliable mesh mat with natural Jade and Tourmaline discs, designed to wrap around knees, shoulders, and curved body areas.',
     bestFor: 'Targeted joint wrapping, lightweight travel, flexible positioning on couches or chairs',
-    gemstones: 'Polished Jade & Tourmaline discs',
+    gemstones: 'Polished Jade & Tourmaline Discs',
     priceRange: '$$',
-    image: 'https://healthyline.com/cdn/shop/files/TAJ-3624-Firm-PEMF-InframatPro-1.webp?v=1772470000',
+    image: 'https://healthyline.com/cdn/shop/files/Mesh_JT_Mat_7224_1b9f6e4d-3d52-4665-9078-2dfe5d91e336.jpg?v=1736635780&width=480',
     link: 'https://healthyline.com/collections/mesh-series',
     specs: {
       farInfrared: true,
@@ -261,15 +261,15 @@ export const HEALTHYLINE_SERIES: SeriesSpecItem[] = [
       pemfMaxIntensity: null,
       pemfPulseDuration: null,
       pemfWaveType: null,
-      matFlexibility: 'Flexible'
+      matFlexibility: 'Soft'
     },
-    highlights: ['Bends & wraps around joints', 'Ultra lightweight & portable', 'Jade & Tourmaline thermal power', 'Versatile multi-angle use']
+    highlights: ['Soft & Flexible Joint Wrapping', 'Ultra Lightweight & Portable', 'Jade & Tourmaline Discs', 'Pure Far Infrared Therapy']
   }
 ];
 
 export const CATEGORY_GROUPS = [
   'All Series',
-  'Far Infrared and PEMF Mat with Photon',
+  'Far Infrared and PEMF Mat with Photon Light Therapy',
   'FIR and PEMF Mat',
   'Far Infrared Mat'
 ] as const;

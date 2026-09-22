@@ -1,10 +1,19 @@
 # HealthyLine 24/7 AI Wellness Concierge Chat Widget
 
-Production-ready, embeddable Vue 3 + TypeScript AI chat widget for [HealthyLine](https://healthyline.com). Connects securely to the HealthyLine AI backend webhook (`https://app.healthyline.com/webhook/ai-chat`) with support for customer order lookups, PEMF/Infrared mat series comparisons, and product recommendations.
+> **Инструкция для пользователя (быстрый старт):**
+> 
+> Этот проект — автономный встраиваемый виджет онлайн-чата и AI-консьержа для HealthyLine.
+> 
+> **Как использовать:**
+> 1. Скачайте проект через меню **Export to ZIP** в Google AI Studio.
+> 2. Распакуйте архив в ваш репозиторий GitHub (`terryogle/ai-chat-healthyline`).
+> 3. Сделайте `git push` в ветку `main`.
+> 4. GitHub Actions автоматически запустит `npm install` -> `npm run typecheck` -> `npm run build` и создаст готовую папку `dist/` с файлами `widget.js` и `widget.css`.
+> 5. На сайте HealthyLine уже подключен скрипт `chat.healthyline.com/widget.js`, поэтому все обновления появятся на сайте автоматически без правок в шаблонах сайта.
 
 ---
 
-# Website Installation
+## Website Installation
 
 To install the HealthyLine AI Chat Widget on the website, add the following code snippet once into your website layout (for example, in Shopify's `theme.liquid` just before the closing `</body>` tag, or in your main HTML template).
 

@@ -26,11 +26,17 @@ const options = useOptions();
 const { messages, currentSessionId, waitingForResponse, sendMessage, startNewSession } = chatStore;
 
 const activeTab = ref<'home' | 'messages' | 'catalog' | 'compare'>('home');
-const compareInitialA = ref<string>('taj');
-const compareInitialB = ref<string>('platinum');
+const unreadMessagesCount = computed(() => messages.value.length);
+const compareInitialA = ref<string>('jet');
+const compareInitialB = ref<string>('');
 const showOrderAuthCard = ref(false);
 const authTriggerSource = ref<'menu' | 'rag'>('menu');
 const isBetaStripVisible = ref(true);
+
+// Feature flags to hide/show Best Sellers, Compare & My Orders without deleting components or code
+const showBestSellers = computed(() => options.value?.showBestSellers ?? options.value?.showCatalog ?? true);
+const showCompare = computed(() => options.value?.showCompare ?? true);
+const showMyOrders = computed(() => options.value?.showMyOrders ?? false);
 
 function dismissBetaStrip() {
   isBetaStripVisible.value = false;
@@ -44,11 +50,13 @@ function dismissBetaStrip() {
 const hasUserMessages = computed(() => messages.value.some(m => m.sender === 'user'));
 
 const starterSuggestions = [
-  { icon: '✨', title: 'What are you looking to improve?', desc: '', query: 'What can HealthyLine mats help with for health, energy and recovery?' },
-  { icon: '⚡', title: 'How do these mats work?', desc: '', query: 'How do PEMF and Far Infrared gemstone mats work?' },
-  { icon: '🌿', title: 'What can these mats help with?', desc: '', query: 'What symptoms, pain relief, and wellness goals can these mats help with?' },
-  { icon: '🎯', title: 'Help me find the right mat', desc: '', query: 'Help me find the right mat for my needs and lifestyle' }
+  { icon: '🎯', title: 'Help me choose my HealthyLine mat', desc: '', query: 'Help me choose my HealthyLine mat' },
+  { icon: '🌿', title: 'What can a HealthyLine mat do for me?', desc: '', query: 'What can a HealthyLine mat do for me?' },
+  { icon: '⭐', title: 'Why HealthyLine, not another brand?', desc: '', query: 'Why HealthyLine, not another brand?' }
 ];
+
+// Temporarily hidden per user request
+const showStarterTopics = ref(false);
 
 const showPrivacyForm = ref(false);
 const currentPrivacyAction = ref<ChatAction | null>(null);
@@ -266,6 +274,14 @@ function handleClickOutside(event: MouseEvent) {
 }
 
 function switchTab(tab: 'home' | 'messages' | 'catalog' | 'compare') {
+  if (tab === 'catalog' && !showBestSellers.value) {
+    activeTab.value = 'home';
+    return;
+  }
+  if (tab === 'compare' && !showCompare.value) {
+    activeTab.value = 'home';
+    return;
+  }
   activeTab.value = tab;
   if (tab === 'messages') {
     scrollToBottom();
@@ -275,6 +291,12 @@ function switchTab(tab: 'home' | 'messages' | 'catalog' | 'compare') {
 }
 
 function handleOpenCompare(seriesName?: string) {
+  if (!showCompare.value) {
+    if (seriesName) {
+      handleSendMessage(`Can you tell me more about ${seriesName} mats and features?`);
+    }
+    return;
+  }
   if (seriesName) {
     const s = seriesName.toLowerCase();
     if (s.includes('rainbow') || s.includes('chakra')) {
@@ -347,6 +369,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="tt-chat">
+    <!-- Top Unobtrusive Banner / Accent Bar -->
+    <div class="tt-chat-top-bar" id="ttChatTopBar">
+      <div class="top-bar-accent"></div>
+    </div>
+
     <!-- Header -->
     <div class="tt-chat-header">
       <div class="header-brand-box">
@@ -388,20 +415,44 @@ onBeforeUnmount(() => {
           <!-- Dropdown Popover -->
           <transition name="menu-pop">
             <div v-if="isMenuOpen" class="header-dropdown-menu">
-              <button class="dropdown-item" @click="isMenuOpen = false; switchTab('home'); showOrderAuthCard = true; authTriggerSource = 'menu'">
-                <span class="dropdown-item-label">My Orders</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-item-icon">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                  <line x1="12" y1="22.08" x2="12" y2="12"/>
-                </svg>
-              </button>
-
               <button class="dropdown-item" @click="handleNewChat">
                 <span class="dropdown-item-label">New Chat</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-item-icon">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+
+              <button class="dropdown-item" @click="switchTab('home'); isMenuOpen = false">
+                <span class="dropdown-item-label">Home</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-item-icon">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </button>
+
+              <button class="dropdown-item" @click="switchTab('messages'); isMenuOpen = false">
+                <span class="dropdown-item-label">Messages</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-item-icon">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </button>
+
+              <button v-if="showBestSellers" class="dropdown-item" @click="switchTab('catalog'); isMenuOpen = false">
+                <span class="dropdown-item-label">Best Sellers</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-item-icon">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </button>
+
+              <button v-if="showCompare" class="dropdown-item" @click="switchTab('compare'); isMenuOpen = false">
+                <span class="dropdown-item-label">Compare Matrix</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-item-icon">
+                  <path d="M16 3h5v5"/>
+                  <path d="M4 20L21 3"/>
+                  <path d="M21 16v5h-5"/>
+                  <path d="M15 15l6 6"/>
+                  <path d="M4 4l5 5"/>
                 </svg>
               </button>
 
@@ -446,6 +497,71 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <!-- TOP NAVIGATION MENU BAR (Visible only on inner tabs, hidden on Homepage) -->
+    <nav v-if="activeTab !== 'home'" class="tt-chat-top-nav" aria-label="Top Menu Navigation">
+      <button 
+        class="nav-tab-btn" 
+        @click="switchTab('home')"
+        title="Home"
+      >
+        <div class="nav-icon-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span>Home</span>
+      </button>
+
+      <button 
+        class="nav-tab-btn" 
+        :class="{ active: activeTab === 'messages' }"
+        @click="switchTab('messages')"
+        title="Messages"
+      >
+        <div class="nav-icon-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <span>Messages <template v-if="unreadMessagesCount > 0">({{ unreadMessagesCount }})</template></span>
+      </button>
+
+      <button 
+        v-if="showBestSellers"
+        class="nav-tab-btn nav-catalog-btn"
+        :class="{ active: activeTab === 'catalog' }"
+        @click="switchTab('catalog')"
+        title="Best Sellers"
+      >
+        <div class="nav-icon-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <span>Best Sellers</span>
+      </button>
+
+      <button 
+        v-if="showCompare"
+        class="nav-tab-btn nav-compare-btn"
+        :class="{ active: activeTab === 'compare' }"
+        @click="switchTab('compare')"
+        title="Compare"
+      >
+        <div class="nav-icon-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 3h5v5"/>
+            <path d="M4 20L21 3"/>
+            <path d="M21 16v5h-5"/>
+            <path d="M15 15l6 6"/>
+            <path d="M4 4l5 5"/>
+          </svg>
+        </div>
+        <span>Compare</span>
+      </button>
+    </nav>
+
     <!-- Official Beta & Trust Strip -->
     <div 
       v-if="isBetaStripVisible" 
@@ -486,7 +602,6 @@ onBeforeUnmount(() => {
       <!-- HOME VIEW -->
       <div v-if="activeTab === 'home'" class="tt-chat-home-view">
         <div class="welcome-box">
-          
           <!-- Order Auth Card Modal when My Orders is clicked -->
           <OrderAuthCard 
             v-if="showOrderAuthCard" 
@@ -508,39 +623,55 @@ onBeforeUnmount(() => {
               <strong class="spotlight-title">Ask a question</strong>
               <p class="spotlight-desc">✦ AI Agent and team can help</p>
             </div>
-            <div class="spotlight-action">
-              <button class="action-cta-btn" aria-label="Start chat and ask a question" title="Start chat">
-                <span class="cta-label">Chat now</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="cta-icon">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
+            <svg class="spotlight-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+
+          <!-- POPULAR QUESTIONS / STARTER CHIPS (temporarily hidden) -->
+          <div v-if="!showOrderAuthCard && showStarterTopics" class="starter-topics-section">
+            <div class="section-label">Recommended Topics</div>
+            <div class="starter-grid">
+              <button 
+                v-for="(item, idx) in starterSuggestions"
+                :key="idx"
+                class="topic-chip-card"
+                @click="handleSendMessage(item.title)"
+              >
+                <div class="topic-chip-header">
+                  <span class="topic-icon">{{ item.icon }}</span>
+                  <span class="topic-title">{{ item.title }}</span>
+                </div>
+                <p v-if="item.desc" class="topic-desc">{{ item.desc }}</p>
+                <svg class="topic-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
                 </svg>
               </button>
             </div>
           </div>
 
-          <!-- Quick Navigation Cards Grid (2x2) -->
+           <!-- Quick Navigation Cards Grid (4 side-by-side / 2x2 grid) -->
           <div v-if="!showOrderAuthCard" class="pinterest-cards-section">
             <div class="section-label">Explore &amp; Services</div>
 
-            <div class="cards-duo-grid">
+            <div class="cards-duo-grid trio-layout">
               <!-- BEST SELLERS -->
-              <button class="duo-card" @click="switchTab('catalog')">
+              <button v-if="showBestSellers" class="duo-card" @click="switchTab('catalog')">
                 <div class="duo-icon-box best-sellers-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2l2.4 7.2h7.6l-6.1 4.5 2.3 7.3-6.2-4.6-6.2 4.6 2.3-7.3-6.1-4.5h7.6z"/>
                   </svg>
                 </div>
                 <div class="duo-info">
                   <strong>Best Sellers</strong>
-                  <small>Explore top mats</small>
+                  <small>Top mats</small>
                 </div>
               </button>
 
               <!-- COMPARE SERIES -->
-              <button class="duo-card" @click="switchTab('compare')">
+              <button v-if="showCompare" class="duo-card" @click="switchTab('compare')">
                 <div class="duo-icon-box compare-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 3h5v5"/>
                     <path d="M4 20L21 3"/>
                     <path d="M21 16v5h-5"/>
@@ -549,30 +680,32 @@ onBeforeUnmount(() => {
                   </svg>
                 </div>
                 <div class="duo-info">
-                  <strong>Compare Series</strong>
-                  <small>Side-by-side specs</small>
+                  <strong>Compare</strong>
+                  <small>Side-by-side</small>
                 </div>
               </button>
 
               <!-- MY ORDERS -->
-              <button class="duo-card" @click="showOrderAuthCard = true; authTriggerSource = 'menu'">
+              <button v-if="showMyOrders" class="duo-card" @click="showOrderAuthCard = true">
                 <div class="duo-icon-box order-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
                   </svg>
                 </div>
                 <div class="duo-info">
                   <strong>My Orders</strong>
-                  <small>Track &amp; manage</small>
+                  <small>Track shipments</small>
                 </div>
               </button>
 
-              <!-- PARTNER WITH US -->
+              <!-- PARTNERSHIP -->
               <button class="duo-card" @click="handleSendMessage('I want to partner with HealthyLine')">
                 <div class="duo-icon-box partner-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -587,30 +720,11 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- POPULAR QUESTIONS / STARTER CHIPS -->
-          <div v-if="!showOrderAuthCard" class="starter-topics-section">
-            <div class="section-label">Recommended Topics</div>
-            <div class="starter-grid">
-              <button 
-                v-for="(item, idx) in starterSuggestions"
-                :key="idx"
-                class="topic-chip-card"
-                @click="handleSendMessage(item.title)"
-              >
-                <div class="topic-chip-header">
-                  <span class="topic-icon">{{ item.icon }}</span>
-                  <span class="topic-title">{{ item.title }}</span>
-                </div>
-                <p v-if="item.desc" class="topic-desc">{{ item.desc }}</p>
-              </button>
-            </div>
-          </div>
-
         </div>
       </div>
       
       <!-- CATALOG VIEW -->
-      <div v-else-if="activeTab === 'catalog'" class="tt-chat-catalog-view">
+      <div v-else-if="activeTab === 'catalog' && showBestSellers" class="tt-chat-catalog-view">
         <ProductCatalog 
           @askQuestion="handleSendMessage" 
           @compareSeries="handleOpenCompare"
@@ -618,7 +732,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- SERIES COMPARISON VIEW -->
-      <div v-else-if="activeTab === 'compare'" class="tt-chat-compare-view">
+      <div v-else-if="activeTab === 'compare' && showCompare" class="tt-chat-compare-view">
         <SeriesComparison 
           :initialSeriesIdA="compareInitialA" 
           :initialSeriesIdB="compareInitialB" 
@@ -644,7 +758,7 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <div v-if="!hasUserMessages" class="empty-messages-prompt">
+        <div v-if="false" class="empty-messages-prompt">
           <div class="starter-header">
             <h3>How can we help you today?</h3>
             <p>Select a quick topic or type your message below:</p>
@@ -677,9 +791,9 @@ onBeforeUnmount(() => {
       </div>
     </div>
     
-    <!-- Footer -->
-    <div class="tt-chat-footer">
-      <div v-if="activeTab === 'messages'" class="footer-input-section">
+    <!-- Footer (Messages Tab Input) -->
+    <div v-if="activeTab === 'messages'" class="tt-chat-footer">
+      <div class="footer-input-section">
         <div v-if="showPrivacyForm" class="tt-chat-privacy-container">
           <ConfirmPrivacy 
             :privacyUrl="currentPrivacyAction?.action"
@@ -712,67 +826,6 @@ onBeforeUnmount(() => {
           <ChatInput @send="handleSendMessage" />
         </div>
       </div>
-
-      <!-- BOTTOM NAVIGATION BAR (Home, Messages, Catalog, Compare) -->
-      <div class="bottom-nav-bar">
-        <button 
-          class="nav-tab-btn" 
-          :class="{ active: activeTab === 'home' }"
-          @click="switchTab('home')"
-        >
-          <div class="nav-icon-box">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </div>
-          <span>Home</span>
-        </button>
-
-        <button 
-          class="nav-tab-btn" 
-          :class="{ active: activeTab === 'messages' }"
-          @click="switchTab('messages')"
-        >
-          <div class="nav-icon-box">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span v-if="messages.length > 0" class="messages-badge">{{ messages.length }}</span>
-          </div>
-          <span>Messages</span>
-        </button>
-
-        <button 
-          class="nav-tab-btn nav-catalog-btn"
-          :class="{ active: activeTab === 'catalog' }"
-          @click="switchTab('catalog')"
-        >
-          <div class="nav-icon-box">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-          </div>
-          <span>Best Sellers</span>
-        </button>
-
-        <button 
-          class="nav-tab-btn nav-compare-btn"
-          :class="{ active: activeTab === 'compare' }"
-          @click="switchTab('compare')"
-        >
-          <div class="nav-icon-box">
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 3h5v5"/>
-              <path d="M4 20L21 3"/>
-              <path d="M21 16v5h-5"/>
-              <path d="M15 15l6 6"/>
-              <path d="M4 4l5 5"/>
-            </svg>
-          </div>
-          <span>Compare</span>
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -787,9 +840,28 @@ onBeforeUnmount(() => {
   font-family: var(--tt-chat-font-family);
   z-index: 99;
   
+  &-top-bar {
+    width: 100%;
+    height: 24px;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .top-bar-accent {
+      width: 34px;
+      height: 3.5px;
+      border-radius: 9999px;
+      background: #cbd5e1;
+      opacity: 0.85;
+    }
+  }
+
   &-header {
     position: relative;
-    z-index: 50;
+    z-index: 600;
     padding: 14px 18px;
     background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
@@ -880,9 +952,11 @@ onBeforeUnmount(() => {
       gap: 8px;
       flex-shrink: 0;
       position: relative;
+      z-index: 650;
 
       .header-menu-container {
         position: relative;
+        z-index: 700;
       }
 
       .header-action-btn {
@@ -956,11 +1030,11 @@ onBeforeUnmount(() => {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.14), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 12px 36px -4px rgba(15, 23, 42, 0.2), 0 6px 16px -2px rgba(15, 23, 42, 0.12);
         padding: 4px;
         display: flex;
         flex-direction: column;
-        z-index: 100;
+        z-index: 9999;
 
         .dropdown-item {
           width: 100%;
@@ -1105,7 +1179,9 @@ onBeforeUnmount(() => {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    background: #fafbfc;
+    background: #ffffff;
+    position: relative;
+    z-index: 1;
 
     &.is-compare-tab {
       padding: 0;
@@ -1179,14 +1255,22 @@ onBeforeUnmount(() => {
   50% { transform: translateY(-4px); opacity: 1; }
 }
 
+.tt-chat-home-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .welcome-box {
   width: 100%;
   max-width: 460px;
   margin: 0 auto;
-  padding: 4px 0 20px;
+  height: 100%;
+  padding: 4px 0 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  justify-content: space-between;
+  box-sizing: border-box;
 
   /* Top AI status badge */
   .home-top-badge-row {
@@ -1219,47 +1303,43 @@ onBeforeUnmount(() => {
     }
   }
 
-  /* Spotlight Ask Hero Card */
+  /* Spotlight Ask Hero Card (~40%) */
   .spotlight-card {
     position: relative;
     width: 100%;
-    background: linear-gradient(135deg, #132e30 0%, #1a3b3d 60%, #245255 100%);
+    flex: 0 0 38%;
+    background: linear-gradient(135deg, #0f2728 0%, #1a3b3d 50%, #245255 100%);
     color: #ffffff;
     border-radius: 20px;
-    padding: 18px 20px;
+    padding: 16px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 24px -4px rgba(19, 46, 48, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 12px 28px -4px rgba(19, 46, 48, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.1);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
+    box-sizing: border-box;
 
     &::before {
       content: '';
       position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(26, 59, 61, 0) 70%);
+      top: -40%;
+      right: -15%;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(26, 59, 61, 0) 70%);
       pointer-events: none;
     }
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 30px -4px rgba(19, 46, 48, 0.55), 0 0 0 1.5px rgba(212, 175, 55, 0.4);
+      box-shadow: 0 16px 34px -4px rgba(19, 46, 48, 0.55), 0 0 0 1.5px rgba(212, 175, 55, 0.4);
 
-      .action-cta-btn {
-        background: #ffffff;
-        color: #132e30;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-        transform: scale(1.04);
-
-        .cta-icon {
-          transform: translateX(2px);
-        }
+      .spotlight-arrow {
+        color: #ffffff;
+        transform: translateX(3px);
       }
     }
 
@@ -1268,10 +1348,17 @@ onBeforeUnmount(() => {
       outline-offset: 2px;
     }
 
+    .spotlight-arrow {
+      color: rgba(255, 255, 255, 0.7);
+      flex-shrink: 0;
+      transition: transform 0.2s ease, color 0.2s ease;
+      z-index: 1;
+    }
+
     .spotlight-content {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       text-align: left;
       z-index: 1;
 
@@ -1298,96 +1385,69 @@ onBeforeUnmount(() => {
       }
 
       .spotlight-title {
-        font-size: 16px;
-        font-weight: 700;
-        line-height: 1.25;
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.2;
         color: #ffffff;
+        letter-spacing: -0.2px;
       }
 
       .spotlight-desc {
         margin: 0;
         font-size: 12.5px;
-        color: rgba(255, 255, 255, 0.88);
-      }
-    }
-
-    .spotlight-action {
-      z-index: 1;
-      flex-shrink: 0;
-
-      .action-cta-btn {
-        padding: 9px 15px;
-        border-radius: 9999px;
-        background: #ffffff;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: #132e30;
-        font-size: 13.5px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.35);
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        white-space: nowrap;
-
-        .cta-label {
-          line-height: 1;
-        }
-
-        .cta-icon {
-          transition: transform 0.2s ease;
-        }
-
-        &:hover {
-          background: #f8fafc;
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.97);
-        }
+        color: rgba(255, 255, 255, 0.9);
       }
     }
   }
 
   .section-label {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     color: #64748b;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     text-align: left;
   }
 
   .pinterest-cards-section {
+    flex: 0 0 58%;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 
     .cards-duo-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 8px;
+
+      &.trio-layout {
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
+      }
 
       .duo-card {
         background: #ffffff;
         border: 1px solid #e8ecf1;
-        border-radius: 16px;
-        padding: 14px;
+        border-radius: 12px;
+        padding: 8px 14px;
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        cursor: pointer;
+        flex-direction: row;
+        align-items: center;
         text-align: left;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        gap: 12px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
         transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        height: 100%;
+        width: 100%;
+        flex: 1;
+        box-sizing: border-box;
 
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
           border-color: #cbd5e1;
         }
 
@@ -1396,9 +1456,9 @@ onBeforeUnmount(() => {
         }
 
         .duo-icon-box {
-          width: 38px;
-          height: 38px;
-          border-radius: 11px;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1432,18 +1492,32 @@ onBeforeUnmount(() => {
         .duo-info {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          align-items: flex-start;
+          text-align: left;
+          gap: 3px;
+          flex: 1;
+          min-width: 0;
 
           strong {
             font-size: 13.5px;
             font-weight: 700;
             color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            line-height: 1.25;
           }
 
           small {
             font-size: 11.5px;
-            color: #64748b;
-            line-height: 1.2;
+            color: #475569;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            font-weight: 500;
           }
         }
       }
@@ -1455,44 +1529,51 @@ onBeforeUnmount(() => {
     flex-direction: column;
 
     .starter-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
 
       .topic-chip-card {
         background: #ffffff;
         border: 1px solid #e8ecf1;
-        border-radius: 14px;
+        border-radius: 12px;
         padding: 12px 14px;
         text-align: left;
         cursor: pointer;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 6px;
-        min-height: 68px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
         transition: all 0.2s ease;
 
         &:hover {
           background: #f8fafc;
           border-color: #1a3b3d;
           transform: translateY(-1px);
+
+          .topic-arrow {
+            color: #1a3b3d;
+            transform: translateX(2px);
+          }
         }
 
         .topic-chip-header {
           display: flex;
-          align-items: flex-start;
-          gap: 8px;
+          align-items: center;
+          gap: 10px;
+          flex: 1;
 
           .topic-icon {
             font-size: 16px;
-            line-height: 1.2;
+            line-height: 1;
             flex-shrink: 0;
           }
 
           .topic-title {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 13.5px;
+            font-weight: 500;
             color: #0f172a;
             line-height: 1.35;
           }
@@ -1503,6 +1584,12 @@ onBeforeUnmount(() => {
           font-size: 11px;
           color: #64748b;
           line-height: 1.3;
+        }
+
+        .topic-arrow {
+          color: #94a3b8;
+          flex-shrink: 0;
+          transition: all 0.2s ease;
         }
       }
     }
@@ -1604,48 +1691,139 @@ onBeforeUnmount(() => {
   }
 }
 
+.tt-chat-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 12px;
+  gap: 2px;
+  position: relative;
+  z-index: 50;
+  flex-shrink: 0;
+
+  .nav-tab-btn {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 10px 2px;
+    border-radius: 0;
+    position: relative;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover {
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &.active {
+      background: transparent;
+      border: none;
+      color: #0f172a;
+      font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 8px;
+        right: 8px;
+        height: 2.5px;
+        background: #0f172a;
+        border-radius: 2px 2px 0 0;
+      }
+
+      .nav-icon-box {
+        color: #0f172a;
+      }
+
+      span {
+        color: #0f172a;
+        font-weight: 600;
+      }
+    }
+
+    .nav-icon-box {
+      position: relative;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+
+      svg {
+        width: 15px;
+        height: 15px;
+        transition: transform 0.2s ease;
+      }
+    }
+  }
+}
+
 .bottom-nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #ffffff;
-  border-top: 1px solid #eef2f6;
-  padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px 12px;
   gap: 6px;
-  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
   position: relative;
-  z-index: 20;
+  z-index: 50;
+  flex-shrink: 0;
 
   .nav-tab-btn {
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
+    white-space: nowrap;
+    display: inline-flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 4px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     color: #475569;
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    padding: 7px 4px;
-    border-radius: 12px;
+    padding: 7px 3px;
+    border-radius: 9px;
     position: relative;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
       background: #f1f5f9;
       border-color: #cbd5e1;
       color: #0f172a;
-      transform: translateY(-1px);
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
       background: #e2e8f0;
     }
 
@@ -1653,8 +1831,7 @@ onBeforeUnmount(() => {
       background: #132e30;
       border-color: #132e30;
       color: #ffffff;
-      box-shadow: 0 3px 10px rgba(19, 46, 48, 0.28);
-      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(19, 46, 48, 0.25);
 
       .nav-icon-box {
         color: #d4af37;
@@ -1668,37 +1845,38 @@ onBeforeUnmount(() => {
 
     .nav-icon-box {
       position: relative;
-      width: 22px;
-      height: 22px;
+      width: 16px;
+      height: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: inherit;
+      flex-shrink: 0;
       transition: all 0.2s ease;
 
       svg {
+        width: 15px;
+        height: 15px;
         transition: transform 0.2s ease;
       }
 
-      .messages-badge {
-        position: absolute;
-        top: -6px;
-        right: -8px;
-        min-width: 16px;
-        height: 16px;
-        background: #e11d48;
-        color: #ffffff;
-        font-size: 9px;
-        font-weight: 800;
-        padding: 0 4px;
-        border-radius: 9999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        border: 2px solid #ffffff;
-        box-shadow: 0 2px 5px rgba(225, 29, 72, 0.35);
-      }
+    .messages-badge {
+      margin-left: 4px;
+      min-width: 17px;
+      height: 17px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 0 5px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+      flex-shrink: 0;
+    }
     }
 
     span {
